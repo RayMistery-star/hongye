@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>设备点检直通车</title>
+    <style>
+        /* 极致的移动端工业风表单 UI */
+        body { margin: 0; padding: 0; background-color: #F3F4F6; font-family: -apple-system, sans-serif; }
+        .header { background-color: #3B82F6; color: white; padding: 30px 20px 20px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header h1 { margin: 0; font-size: 22px; }
+        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+        
+        .form-container { background: white; margin: -20px 20px 20px; padding: 25px 20px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); position: relative; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; color: #374151; font-weight: 600; margin-bottom: 8px; }
+        
+        /* 大尺寸输入框，防误触 */
+        input[type="text"], select { width: 100%; box-sizing: border-box; padding: 15px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 16px; background-color: #F9FAFB; outline: none; transition: border-color 0.2s; }
+        input[type="text"]:focus, select:focus { border-color: #3B82F6; }
+        
+        .submit-btn { width: 100%; background-color: #3B82F6; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(59,130,246,0.3); }
+        .submit-btn:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>现场点检终端</h1>
+        <p>数据安全通道：加密直连明道云</p>
+    </div>
+
+    <div class="form-container">
+        <div class="form-group">
+            <label>设备编号 (物理锚点读取)</label>
+            <input type="text" id="eqId" readonly value="识别中...">
+        </div>
+        
+        <div class="form-group">
+            <label>设备运行状态</label>
+            <select id="eqStatus">
+                <option value="正常">✅ 设备运行正常</option>
+                <option value="异常">❌ 发现异常情况</option>
+            </select>
+        </div>
+
+        <button class="submit-btn" onclick="submitData()">提交点检数据</button>
+    </div>
+
+    <script>
+        // 1. 智能抓取 NFC 链接里的参数 (比如 ?eq=042)
+        const urlParams = new URLSearchParams(window.location.search);
+        const equipmentId = urlParams.get('eq') || '未知设备';
+        document.getElementById('eqId').value = equipmentId;
+
+        // 2. 提交数据到明道云 Webhook
+        function submitData() {
+            const btn = document.querySelector('.submit-btn');
+            btn.innerText = '正在加密上传...';
+            btn.style.backgroundColor = '#9CA3AF';
+
+            // ⚠️ 注意：把下面双引号里的链接，换成你刚才在第一步生成的明道云 Webhook 链接！
+            const webhookUrl = "https://api.mingdao.com/workflow/hooks/你的专属代码";
+
+            // 抓取表单数据
+            const payload = {
+                "设备号": document.getElementById('eqId').value,
+                "状态": document.getElementById('eqStatus').value
+            };
+
+            // 发射数据到明道云
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(response => {
+                alert('🎉 点检成功！数据已直达大屏！');
+                // 提交成功后可以自动关闭当前网页或返回
+                btn.innerText = '提交成功';
+                btn.style.backgroundColor = '#10B981';
+            }).catch(error => {
+                alert('提交失败，请检查网络！');
+                btn.innerText = '重新提交';
+                btn.style.backgroundColor = '#3B82F6';
+            });
+        }
+    </script>
+</body>
+</html>
