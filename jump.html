@@ -3,41 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>设备点检直通车</title>
+    <title>消防设备点检</title>
     <style>
-        /* 极简的工业风 UI 设计 */
-        body { margin: 0; padding: 0; background-color: #F3F4F6; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #E5E7EB; border-top-color: #3B82F6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loading-text { color: #4B5563; font-size: 16px; font-weight: 500; }
-        .sub-text { color: #9CA3AF; font-size: 12px; margin-top: 8px; }
+        /* 1. 模拟底层深色遮罩背景 */
+        body { margin: 0; padding: 0; background-color: rgba(0, 0, 0, 0.6); height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+        
+        /* 2. 模拟支付宝/Apple的底部优雅抽屉 */
+        .bottom-sheet { background-color: #FFFFFF; border-radius: 24px 24px 0 0; padding: 30px 20px 40px 20px; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); transform: translateY(100%); animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        /* 抽屉滑出的动画 */
+        @keyframes slideUp { to { transform: translateY(0); } }
+        
+        /* 3. 卡片内部的视觉排版 */
+        .header { display: flex; align-items: center; margin-bottom: 20px; }
+        .icon-box { width: 50px; height: 50px; background-color: #E0E7FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 15px; }
+        .title { font-size: 20px; font-weight: 600; color: #111827; margin: 0; }
+        .subtitle { font-size: 14px; color: #6B7280; margin-top: 4px; }
+        
+        /* 4. 消除二次确认的终极武器：巨大的物理点击按钮 */
+        .action-btn { background-color: #3B82F6; color: white; border: none; border-radius: 14px; width: 100%; padding: 16px 0; font-size: 17px; font-weight: 600; text-align: center; display: block; text-decoration: none; margin-top: 30px; transition: background-color 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        .action-btn:active { background-color: #2563EB; transform: scale(0.98); }
     </style>
 </head>
 <body>
-    <div class="spinner"></div>
-    <div class="loading-text" id="statusText">正在安全唤醒点检系统...</div>
-    <div class="sub-text">企业级零信任安全网关</div>
+
+    <div class="bottom-sheet">
+        <div class="header">
+            <div class="icon-box">🧯</div>
+            <div>
+                <h1 class="title">消防设备点检系统</h1>
+                <div class="subtitle" id="deviceInfo">正在读取设备节点...</div>
+            </div>
+        </div>
+        
+        <p style="color: #4B5563; font-size: 15px; line-height: 1.5; margin: 0;">
+            您已触碰安全巡检锚点。<br>请点击下方按钮，直达内网填报引擎。
+        </p>
+
+        <a href="dingtalk://dingtalkclient/page/link?url=http%3A%2F%2F192.168.128.145%2Fxt" class="action-btn" id="jumpBtn">验证身份并点检</a>
+    </div>
 
     <script>
-        // 1. 获取网址后面跟的设备参数（比如 ?eq=042）
+        // 抓取 URL 参数，让界面显得更智能真实
         const urlParams = new URLSearchParams(window.location.search);
-        const equipmentId = urlParams.get('eq') || '未知设备';
-
-        // 动态更新界面文字，增加真实感
-        if(equipmentId !== '未知设备') {
-            document.getElementById('statusText').innerText = '正在加载设备 [' + equipmentId + '] 点检表...';
+        const equipmentId = urlParams.get('eq');
+        if(equipmentId) {
+            document.getElementById('deviceInfo').innerText = '当前物理锚点：设备 [' + equipmentId + ']';
         }
-
-        // =====================================================================
-        // ⚠️ 核心修改区：请务必把下面双引号里的内容，替换为你自己拼接好的真实链接！
-        // 格式必须是：dingtalk://dingtalkclient/page/link?url=【经过URL编码的明道云链接】
-        // =====================================================================
-        const finalDingtalkUrl = "dingtalk://dingtalkclient/page/link?url=http%3A%2F%2F192.168.128.145%2Fxt";
-
-        // 2. 毫秒级延迟后执行强制跳转（给视觉动画留出 0.8 秒的展示时间，消除突兀感）
-        setTimeout(function() {
-            window.location.replace(finalDingtalkUrl);
-        }, 800);
     </script>
 </body>
 </html>
