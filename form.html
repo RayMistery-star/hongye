@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>设备日常点检终端</title>
+    <title>设备日常点检</title>
     <style>
-        /* 极致的移动端工业风表单 UI */
         body { margin: 0; padding: 0; background-color: #F3F4F6; font-family: -apple-system, sans-serif; }
         .header { background-color: #0F172A; color: white; padding: 30px 20px 20px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .header h1 { margin: 0; font-size: 22px; }
@@ -15,19 +14,16 @@
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 14px; color: #374151; font-weight: 600; margin-bottom: 8px; }
         
-        /* 大尺寸输入框，防误触 */
         input[type="text"], select, textarea { width: 100%; box-sizing: border-box; padding: 14px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 16px; background-color: #F9FAFB; outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
-        input:focus, select:focus, textarea:focus { border-color: #3B82F6; background-color: #FFFFFF; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        input:focus, select:focus, textarea:focus { border-color: #3B82F6; background-color: #FFFFFF; }
         input[readonly] { background-color: #E5E7EB; color: #6B7280; border-color: #D1D5DB; font-weight: bold; }
         
-        /* 提交按钮 */
-        .submit-btn { width: 100%; background-color: #2563EB; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); transition: all 0.2s; margin-top: 10px; }
-        .submit-btn:active { transform: scale(0.98); background-color: #1D4ED8; }
-        .submit-btn:disabled { background-color: #9CA3AF; box-shadow: none; transform: none; }
+        .submit-btn { width: 100%; background-color: #2563EB; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .submit-btn:active { background-color: #1D4ED8; }
+        .submit-btn:disabled { background-color: #9CA3AF; }
 
         .divider { height: 1px; background-color: #E5E7EB; margin: 25px 0; }
         
-        /* 消除钉钉警告的视觉不适感，增加官方声明 */
         .trust-badge { text-align: center; font-size: 12px; color: #9CA3AF; margin-top: 15px; }
     </style>
 </head>
@@ -35,32 +31,22 @@
 
     <div class="header">
         <h1>现场设备点检</h1>
-        <p>数据直连明道云 · 内部专用终端</p>
+        <p>消防点检表</p>
     </div>
 
     <div class="form-container">
         <div class="form-group">
-            <label>设备编号 (物理锚点读取)</label>
+            <label>设备编号</label>
             <input type="text" id="eqId" readonly value="获取中...">
-        </div>
-
-        <div class="form-group">
-            <label>确认点检人</label>
-            <select id="inspector">
-                <option value="" disabled selected>请选择您的姓名</option>
-                <option value="张三">张三 (检修一班)</option>
-                <option value="李四">李四 (检修一班)</option>
-                <option value="王五">王五 (机电组)</option>
-            </select>
         </div>
 
         <div class="divider"></div>
 
         <div class="form-group">
-            <label>设备整体状态</label>
+            <label>消防设施状态</label>
             <select id="status">
-                <option value="正常">✅ 正常运行</option>
-                <option value="异常">❌ 发现异常</option>
+                <option value="正常">✅ 正常</option>
+                <option value="异常">❌ 异常</option>
             </select>
         </div>
 
@@ -70,13 +56,13 @@
         </div>
 
         <div class="form-group">
-            <label>处理结果备注</label>
+            <label>备注</label>
             <textarea id="resultDesc" rows="2" placeholder="后续跟进建议..."></textarea>
         </div>
 
-        <button class="submit-btn" id="submitBtn" onclick="submitData()">加密提交大屏</button>
+        <button class="submit-btn" id="submitBtn" onclick="submitData()">提交</button>
         
-        <div class="trust-badge">🔒 业务数据已使用企业内网级别加密传输</div>
+        <div class="trust-badge">🔒 内部系统数据传输</div>
     </div>
 
     <script>
@@ -86,23 +72,16 @@
 
         // 2. 组装数据并提交
         function submitData() {
-            const inspector = document.getElementById('inspector').value;
-            if (!inspector) {
-                alert("请先选择点检人！");
-                return;
-            }
-
             const btn = document.getElementById('submitBtn');
             const originalText = btn.innerText;
-            btn.innerText = '数据上云中...';
+            btn.innerText = '提交中...';
             btn.disabled = true;
 
-            // ⚠️ 你的真实 Webhook 链接
             const webhookUrl = "https://api.mingdao.com/workflow/hooks/NjliMTI3ZDJhYmQ2Yjg0MmRjMTI4NTI1";
 
+            // 注意：这里已经删除了 inspector 字段
             const payload = {
                 "eqId": document.getElementById('eqId').value,
-                "inspector": inspector,
                 "status": document.getElementById('status').value,
                 "abnormalDesc": document.getElementById('abnormalDesc').value,
                 "resultDesc": document.getElementById('resultDesc').value
@@ -114,10 +93,12 @@
                 body: JSON.stringify(payload)
             }).then(response => {
                 if(response.ok) {
-                    btn.innerText = '✓ 提交成功';
+                    btn.innerText = '提交成功';
                     btn.style.backgroundColor = '#10B981';
-                    alert("🎉 记录已成功同步至明道云！您可以关闭此页面。");
-                } else { throw new Error('网络异常'); }
+                    alert("记录已提交！您可以关闭此页面。");
+                } else { 
+                    throw new Error('网络异常'); 
+                }
             }).catch(error => {
                 alert('提交失败！请检查网络。');
                 btn.innerText = originalText;
