@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>设备点检直通车</title>
+    <style>
+        /* 极简的工业风 UI 设计 */
+        body { margin: 0; padding: 0; background-color: #F3F4F6; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #E5E7EB; border-top-color: #3B82F6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { color: #4B5563; font-size: 16px; font-weight: 500; }
+        .sub-text { color: #9CA3AF; font-size: 12px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="spinner"></div>
+    <div class="loading-text" id="statusText">正在安全唤醒点检系统...</div>
+    <div class="sub-text">企业级零信任安全网关</div>
+
+    <script>
+        // 1. 获取网址后面跟的设备参数（比如 ?eq=042）
+        const urlParams = new URLSearchParams(window.location.search);
+        const equipmentId = urlParams.get('eq') || '未知设备';
+
+        // 动态更新界面文字，增加真实感
+        if(equipmentId !== '未知设备') {
+            document.getElementById('statusText').innerText = '正在加载设备 [' + equipmentId + '] 点检表...';
+        }
+
+        // =====================================================================
+        // ⚠️ 核心修改区：请务必把下面双引号里的内容，替换为你自己拼接好的真实链接！
+        // 格式必须是：dingtalk://dingtalkclient/page/link?url=【经过URL编码的明道云链接】
+        // =====================================================================
+        const finalDingtalkUrl = "dingtalk://dingtalkclient/page/link?url=https%3A%2F%2Fwww.mingdao.com%2Fapp%2F你的专属表单代码请替换这里"; 
+
+        // 2. 毫秒级延迟后执行强制跳转（给视觉动画留出 0.8 秒的展示时间，消除突兀感）
+        setTimeout(function() {
+            window.location.replace(finalDingtalkUrl);
+        }, 800);
+    </script>
+</body>
+</html>
