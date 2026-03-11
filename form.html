@@ -14,63 +14,106 @@
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 14px; color: #374151; font-weight: 600; margin-bottom: 8px; }
         
-        input[type="text"], select { width: 100%; box-sizing: border-box; padding: 14px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 16px; background-color: #F9FAFB; outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
-        input:focus, select:focus { border-color: #3B82F6; background-color: #FFFFFF; }
-        input[readonly] { background-color: #E5E7EB; color: #6B7280; border-color: #D1D5DB; font-weight: bold; }
+        input[type="text"], select, textarea { width: 100%; box-sizing: border-box; padding: 14px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 16px; background-color: #F9FAFB; outline: none; transition: border-color 0.2s; -webkit-appearance: none; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { border-color: #3B82F6; background-color: #FFFFFF; }
         
-        .submit-btn { width: 100%; background-color: #2563EB; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .submit-btn:active { background-color: #1D4ED8; }
-        .submit-btn:disabled { background-color: #9CA3AF; }
+        /* 视觉上弱化预设信息，强调不可编辑 */
+        .readonly-info { background-color: #F3F4F6; padding: 14px; border-radius: 10px; color: #4B5563; font-weight: 500; border: 1px dashed #D1D5DB; }
+        textarea { resize: vertical; min-height: 80px; }
+        
+        .submit-btn { width: 100%; background-color: #2563EB; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: background-color 0.2s; }
+        .submit-btn:disabled { background-color: #9CA3AF; cursor: not-allowed; }
         .divider { height: 1px; background-color: #E5E7EB; margin: 25px 0; }
-        .trust-badge { text-align: center; font-size: 12px; color: #9CA3AF; margin-top: 15px; }
+        .error-text { color: #EF4444 !important; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>消防设施点检</h1>
-        <p>内部系统专属通道</p>
+        <p>数据测试通道</p>
     </div>
 
     <div class="form-container">
         <div class="form-group">
-            <label>设施编号</label>
-            <input type="text" id="facilityId" readonly value="读取中...">
+            <label>当前校验设备</label>
+            <div class="readonly-info" id="displayInfo">信息读取中...</div>
+            <input type="hidden" id="nfcId" value="">
         </div>
 
         <div class="divider"></div>
 
         <div class="form-group">
-            <label>当前点检状态</label>
+            <label>当前点检状态 <span class="error-text">*</span></label>
             <select id="status">
                 <option value="正常">✅ 正常</option>
                 <option value="异常">❌ 异常</option>
             </select>
         </div>
 
+        <div class="form-group">
+            <label>备注 (选填)</label>
+            <textarea id="remark" placeholder="如有异常请简要说明..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>点检人员 <span class="error-text">*</span></label>
+            <select id="inspector">
+                <option value="" disabled selected>请选择测试人员</option>
+                <option value="张三">张三</option>
+                <option value="李四">李四</option>
+            </select>
+        </div>
+
         <button class="submit-btn" id="submitBtn" onclick="submitData()">提交点检</button>
-        
-        <div class="trust-badge">🔒 状态数据加密同步</div>
     </div>
 
     <script>
-        // 1. 抓取 URL 参数
-        const urlParams = new URLSearchParams(window.location.search);
-        document.getElementById('facilityId').value = urlParams.get('eq') || '未知编号';
+        // --- 系统防错机制：强制校验 URL 挂载参数 ---
+        let isValidRequest = false;
 
-        // 2. 组装数据并发射
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const nfcValue = urlParams.get('nfc');
+            const nameValue = urlParams.get('name') || '未知设备';
+            
+            if (nfcValue && nfcValue.trim() !== '') {
+                document.getElementById('nfcId').value = nfcValue.trim();
+                document.getElementById('displayInfo').innerHTML = `
+                    <strong>${decodeURIComponent(nameValue)}</strong> <br>
+                    <span style="font-size: 12px; color: #9CA3AF;">追踪标识: ${nfcValue.trim()}</span>
+                `;
+                isValidRequest = true;
+            } else {
+                document.getElementById('displayInfo').innerHTML = "<span class='error-text'>无效标签：未能获取到匹配标识，禁止操作。</span>";
+            }
+        };
+
         function submitData() {
+            if (!isValidRequest) {
+                alert("流程拦截：无法识别该设备，请确认 NFC 标签是否有效。");
+                return;
+            }
+
+            const inspector = document.getElementById('inspector').value;
+            if (!inspector) {
+                alert("流程要求：请选择测试人员。");
+                return;
+            }
+
             const btn = document.getElementById('submitBtn');
             const originalText = btn.innerText;
-            btn.innerText = '提交中...';
+            btn.innerText = '发送中...';
             btn.disabled = true;
 
-            // ⚠️ 你的真实 Webhook 链接
-            const webhookUrl = "https://api.mingdao.com/workflow/hooks/NjliMTI3ZDJhYmQ2Yjg0MmRjMTI4NTI1";
+            // ⚠️ 替换为你的真实 Webhook 链接
+            const webhookUrl = "https://api.mingdao.com/workflow/hooks/YOUR_WEBHOOK_URL";
 
             const payload = {
-                "facilityId": document.getElementById('facilityId').value,
-                "status": document.getElementById('status').value
+                "nfcId": document.getElementById('nfcId').value,
+                "status": document.getElementById('status').value,
+                "remark": document.getElementById('remark').value,
+                "inspector": inspector
             };
 
             fetch(webhookUrl, {
@@ -79,12 +122,12 @@
                 body: JSON.stringify(payload)
             }).then(response => {
                 if(response.ok) {
-                    btn.innerText = '提交成功';
+                    btn.innerText = '同步成功';
                     btn.style.backgroundColor = '#10B981';
-                    alert("点检完成！状态已更新至台账。");
+                    alert("测试验证通过！");
                 } else { throw new Error('网络异常'); }
             }).catch(error => {
-                alert('提交失败！请检查网络连接。');
+                alert('系统异常，请重试。');
                 btn.innerText = originalText;
                 btn.disabled = false;
             });
