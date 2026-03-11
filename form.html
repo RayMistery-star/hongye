@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>设备日常点检</title>
+    <title>消防设备点检终端</title>
     <style>
         body { margin: 0; padding: 0; background-color: #F3F4F6; font-family: -apple-system, sans-serif; }
         .header { background-color: #0F172A; color: white; padding: 30px 20px 20px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -14,77 +14,63 @@
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 14px; color: #374151; font-weight: 600; margin-bottom: 8px; }
         
-        input[type="text"], select, textarea { width: 100%; box-sizing: border-box; padding: 14px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 16px; background-color: #F9FAFB; outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
-        input:focus, select:focus, textarea:focus { border-color: #3B82F6; background-color: #FFFFFF; }
+        input[type="text"], select { width: 100%; box-sizing: border-box; padding: 14px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 16px; background-color: #F9FAFB; outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
+        input:focus, select:focus { border-color: #3B82F6; background-color: #FFFFFF; }
         input[readonly] { background-color: #E5E7EB; color: #6B7280; border-color: #D1D5DB; font-weight: bold; }
         
         .submit-btn { width: 100%; background-color: #2563EB; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .submit-btn:active { background-color: #1D4ED8; }
         .submit-btn:disabled { background-color: #9CA3AF; }
-
         .divider { height: 1px; background-color: #E5E7EB; margin: 25px 0; }
-        
         .trust-badge { text-align: center; font-size: 12px; color: #9CA3AF; margin-top: 15px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>现场设备点检</h1>
-        <p>消防点检表</p>
+        <h1>消防设施点检</h1>
+        <p>内部系统专属通道</p>
     </div>
 
     <div class="form-container">
         <div class="form-group">
-            <label>设备编号</label>
-            <input type="text" id="eqId" readonly value="获取中...">
+            <label>设施编号</label>
+            <input type="text" id="facilityId" readonly value="读取中...">
         </div>
 
         <div class="divider"></div>
 
         <div class="form-group">
-            <label>消防设施状态</label>
+            <label>当前点检状态</label>
             <select id="status">
                 <option value="正常">✅ 正常</option>
                 <option value="异常">❌ 异常</option>
             </select>
         </div>
 
-        <div class="form-group">
-            <label>异常说明 (无异常可不填)</label>
-            <textarea id="abnormalDesc" rows="2" placeholder="简述异常..."></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>备注</label>
-            <textarea id="resultDesc" rows="2" placeholder="后续跟进建议..."></textarea>
-        </div>
-
-        <button class="submit-btn" id="submitBtn" onclick="submitData()">提交</button>
+        <button class="submit-btn" id="submitBtn" onclick="submitData()">提交点检</button>
         
-        <div class="trust-badge">🔒 内部系统数据传输</div>
+        <div class="trust-badge">🔒 状态数据加密同步</div>
     </div>
 
     <script>
         // 1. 抓取 URL 参数
         const urlParams = new URLSearchParams(window.location.search);
-        document.getElementById('eqId').value = urlParams.get('eq') || '未知设备';
+        document.getElementById('facilityId').value = urlParams.get('eq') || '未知编号';
 
-        // 2. 组装数据并提交
+        // 2. 组装数据并发射
         function submitData() {
             const btn = document.getElementById('submitBtn');
             const originalText = btn.innerText;
             btn.innerText = '提交中...';
             btn.disabled = true;
 
+            // ⚠️ 你的真实 Webhook 链接
             const webhookUrl = "https://api.mingdao.com/workflow/hooks/NjliMTI3ZDJhYmQ2Yjg0MmRjMTI4NTI1";
 
-            // 注意：这里已经删除了 inspector 字段
             const payload = {
-                "eqId": document.getElementById('eqId').value,
-                "status": document.getElementById('status').value,
-                "abnormalDesc": document.getElementById('abnormalDesc').value,
-                "resultDesc": document.getElementById('resultDesc').value
+                "facilityId": document.getElementById('facilityId').value,
+                "status": document.getElementById('status').value
             };
 
             fetch(webhookUrl, {
@@ -95,12 +81,10 @@
                 if(response.ok) {
                     btn.innerText = '提交成功';
                     btn.style.backgroundColor = '#10B981';
-                    alert("记录已提交！您可以关闭此页面。");
-                } else { 
-                    throw new Error('网络异常'); 
-                }
+                    alert("点检完成！状态已更新至台账。");
+                } else { throw new Error('网络异常'); }
             }).catch(error => {
-                alert('提交失败！请检查网络。');
+                alert('提交失败！请检查网络连接。');
                 btn.innerText = originalText;
                 btn.disabled = false;
             });
