@@ -1,7 +1,7 @@
 ---
 repo: /Users/linghaochen/hongye
 branch: main
-notion: （待填：Notion 项目页 URL）
+notion: https://app.notion.com/p/40642f9ac28c81738988c635786a3f4c
 updated: 2026-10-27 14:17
 status: idle
 ---
